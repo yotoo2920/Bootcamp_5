@@ -1,6 +1,9 @@
 angular.module('listings').controller('ListingsController', ['$scope', '$location', '$stateParams', '$state', 'Listings', 
   function($scope, $location, $stateParams, $state, Listings){
-    $scope.find = function() {
+      // all the market objects  
+      $scope.markers = [];
+
+      $scope.find = function() {
       /* set loader*/
       $scope.loading = true;
 
@@ -8,12 +11,39 @@ angular.module('listings').controller('ListingsController', ['$scope', '$locatio
       Listings.getAll().then(function(response) {
         $scope.loading = false; //remove loader
         $scope.listings = response.data;
+          
+        // iterating to populate the market array with all listings
+      var counter = 0;
+      $scope.markers = [];
+      for (var i in $scope.listings) {
+          if ($scope.listings[i].coordinates != null)
+          {
+              $scope.markers.push($scope.createNewMarket(counter++, $scope.listings[i]));
+          }
+      }
+
+        
       }, function(error) {
         $scope.loading = false;
         $scope.error = 'Unable to retrieve listings!\n' + error;
       });
     };
+    $scope.createNewMarket = function (id, listing, idKey) {
+        if (idKey == null) {
+            idKey = "id";
+        }
 
+        var ret = {
+            code: listing.code,
+            name: listing.name,
+            address: listing.address,
+            latitude: listing["coordinates"]["latitude"],
+            longitude: listing["coordinates"]["longitude"]
+        };
+        ret[idKey] = id;
+        return ret;
+    };
+      
     $scope.findOne = function() {
       debugger;
       $scope.loading = true;
@@ -131,5 +161,14 @@ angular.module('listings').controller('ListingsController', ['$scope', '$locatio
       }, 
       zoom: 14
     }
+
+    $scope.options = {scrollwheel: false};
+    
+
+    
+    
+    
+    
+    
   }
 ]);
